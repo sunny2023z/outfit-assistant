@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { uploadFile, generateKey } from '../services/cos.service';
-import { recognizeClothing, recognizeOotd } from '../services/ai.service';
+import { recognizeClothing, recognizeOotd, OotdRecognitionResult } from '../services/ai.service';
 
 const router = Router();
 
@@ -60,7 +60,7 @@ router.post('/ootd', upload.single('image'), async (req, res) => {
     const imageUrl = await uploadFile(req.file.buffer, key, req.file.mimetype);
 
     // AI 识别 OOTD
-    let recognition = { description: '', items: [] };
+    let recognition: OotdRecognitionResult = { description: '', items: [] };
     try {
       recognition = await recognizeOotd(imageUrl);
     } catch (err) {
