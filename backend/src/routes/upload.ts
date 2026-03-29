@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { uploadFile, generateKey } from '../services/cos.service';
-import { recognizeClothing } from '../services/ai.service';
+import { recognizeClothing, recognizeOotd } from '../services/ai.service';
 
 const router = Router();
 
@@ -44,6 +44,32 @@ router.post('/', upload.single('image'), async (req: Request, res: Response) => 
     return res.status(200).json({ url, key, recognition });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || 'Upload failed' });
+  }
+});
+
+// POST /api/upload/ootd - 上传 OOTD 照片并 AI 识别
+router.post('/ootd', upload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No image provided' });
+
+  try {
+    const { userId = 'user123' } = req.body;
+    const ext = req.file.originalname.split('.').pop() || 'jpg';
+    const key = `ootd/${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    // 上传到 COS
+    const imageUrl = await uploadFile(req.file.buffer, key, req.file.mimetype);
+
+    // AI 识别 OOTD
+    let recognition = { description: '', items: [] };
+    try {
+      recognition = await recognizeOotd(imageUrl);
+    } catch (err) {
+      console.error('OOTD recognition failed:', err);
+    }
+
+    res.json({ url: imageUrl, recognition });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 

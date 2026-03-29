@@ -1,0 +1,155 @@
+.ootd {
+  min-height: 100vh;
+  background: #fff;
+  padding-bottom: 120px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.loading-text {
+  font-size: 36px;
+  color: #333;
+  font-weight: 500;
+}
+
+.loading-hint {
+  font-size: 26px;
+  color: #999;
+  margin-top: 16px;
+}
+
+.ootd-image {
+  width: 100%;
+  height: 480px;
+  background: #f5f5f5;
+}
+
+.description {
+  padding: 24px 32px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.desc-text {
+  font-size: 26px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.section {
+  padding: 32px;
+}
+
+.section-title {
+  font-size: 30px;
+  font-weight: 600;
+  color: #000;
+  display: block;
+}
+
+.section-hint {
+  font-size: 24px;
+  color: #999;
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+.empty-text {
+  font-size: 28px;
+  color: #999;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  border: 2px solid #eee;
+  transition: all 0.2s;
+
+  &.confirmed {
+    border-color: #000;
+    background: #fafafa;
+  }
+
+  &.unconfirmed {
+    opacity: 0.6;
+  }
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-desc {
+  font-size: 28px;
+  color: #333;
+  display: block;
+}
+
+.item-detail {
+  font-size: 24px;
+  color: #999;
+  display: block;
+  margin-top: 6px;
+}
+
+.matched-label {
+  font-size: 22px;
+  color: #4CAF50;
+  display: block;
+  margin-top: 6px;
+}
+
+.unmatched-label {
+  font-size: 22px;
+  color: #999;
+  display: block;
+  margin-top: 6px;
+}
+
+.matched-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  margin: 0 16px;
+  background: #f0f0f0;
+}
+
+.check {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.checked {
+    background: #000;
+    border-color: #000;
+  }
+}
+
+.check-icon {
+  color: #fff;
+  font-size: 22px;
+}
+
+.save-btn {
+  margin: 0 32px;
+  background: #000 !important;
+  color: #fff !important;
+  border-radius: 48px !important;
+  font-size: 30px !important;
+  height: 88px !important;
+  line-height: 88px !important;
+}

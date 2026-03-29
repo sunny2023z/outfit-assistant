@@ -5,9 +5,13 @@ export interface IClothingItem extends Document {
   imageUrl: string;
   category: 'top' | 'bottom' | 'dress' | 'outerwear' | 'shoes' | 'accessory';
   colors: string[];
+  material: string;
   style: string[];
   seasons: string[];
   occasions: string[];
+  note: string;
+  wearCount: number;
+  lastWornAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,10 +25,14 @@ const ClothingItemSchema = new Schema<IClothingItem>(
       required: true,
       enum: ['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'],
     },
-    colors: { type: [String], required: true, default: [] },
+    colors: { type: [String], default: [] },
+    material: { type: String, default: '' },
     style: { type: [String], default: [] },
     seasons: { type: [String], default: [] },
     occasions: { type: [String], default: [] },
+    note: { type: String, default: '' },
+    wearCount: { type: Number, default: 0 },
+    lastWornAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

@@ -2,8 +2,10 @@ export default defineAppConfig({
   pages: [
     'pages/wardrobe/index',
     'pages/wardrobe/upload',
+    'pages/wardrobe/detail',
     'pages/recommend/index',
     'pages/record/index',
+    'pages/record/ootd',
     'pages/settings/index'
   ],
   window: {

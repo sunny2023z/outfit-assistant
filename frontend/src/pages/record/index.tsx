@@ -37,6 +37,13 @@ export default function Record() {
     }
   };
 
+  const handleAddOotd = async () => {
+    const res = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] });
+    if (res.tempFilePaths[0]) {
+      Taro.navigateTo({ url: `/pages/record/ootd?imagePath=${encodeURIComponent(res.tempFilePaths[0])}` });
+    }
+  };
+
   const prevMonth = () => {
     if (month === 1) { setYear(y => y - 1); setMonth(12); }
     else setMonth(m => m - 1);
@@ -85,6 +92,11 @@ export default function Record() {
       {/* 本月统计 */}
       <View className='stats'>
         <Text className='stats-text'>本月已记录 {records.length} 天</Text>
+      </View>
+
+      {/* 浮动添加按钮 */}
+      <View className='fab' onClick={handleAddOotd}>
+        <Text className='fab-icon'>+</Text>
       </View>
     </View>
   );

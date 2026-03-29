@@ -40,6 +40,8 @@ export const wardrobeApi = {
     request<{ data: ClothingItem }>({ url: `/api/wardrobe/items/${id}`, method: 'PUT', data }),
   deleteItem: (id: string) =>
     request<{ message: string }>({ url: `/api/wardrobe/items/${id}`, method: 'DELETE' }),
+  updateNote: (id: string, note: string) =>
+    request<{ data: ClothingItem }>({ url: `/api/wardrobe/items/${id}/note`, method: 'PUT', data: { note } }),
 };
 
 export const recommendApi = {
@@ -57,6 +59,27 @@ export const recordsApi = {
       url: '/api/records',
       data: { userId, year, month },
     }),
-  createRecord: (data: { userId: string; outfitId: string; date: string; note?: string }) =>
+  createRecord: (data: { userId: string; outfitId?: string; clothingItemIds?: string[]; imageUrl?: string; aiDescription?: string; date: string; note?: string }) =>
     request<{ data: WearRecord }>({ url: '/api/records', method: 'POST', data }),
+};
+
+export const ootdApi = {
+  upload: (userId: string, filePath: string) => {
+    return new Promise<{ url: string; recognition: { description: string; items: Array<{ category: string; colors: string[]; material: string; description: string }> } }>((resolve, reject) => {
+      Taro.uploadFile({
+        url: `https://outfit-assistant.jellyzen.fun/api/upload/ootd`,
+        filePath,
+        name: 'image',
+        formData: { userId },
+        success: (res) => {
+          try {
+            resolve(JSON.parse(res.data));
+          } catch {
+            reject(new Error('Parse failed'));
+          }
+        },
+        fail: reject,
+      });
+    });
+  },
 };

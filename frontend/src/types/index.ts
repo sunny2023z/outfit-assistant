@@ -8,6 +8,10 @@ export interface ClothingItem {
   seasons: string[];
   occasions: string[];
   createdAt: string;
+  material: string;
+  note: string;
+  wearCount: number;
+  lastWornAt: string | null;
 }
 
 export interface Outfit {
@@ -23,7 +27,10 @@ export interface Outfit {
 export interface WearRecord {
   _id: string;
   userId: string;
-  outfitId: string | Outfit;
+  outfitId?: string | Outfit;
+  clothingItemIds: string[];
+  imageUrl?: string;
+  aiDescription?: string;
   date: string;
   note?: string;
 }

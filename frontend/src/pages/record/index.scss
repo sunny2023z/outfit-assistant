@@ -110,3 +110,24 @@
   font-size: 28px;
   color: #666;
 }
+
+.fab {
+  position: fixed;
+  right: 40px;
+  bottom: 120px;
+  width: 96px;
+  height: 96px;
+  background: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.fab-icon {
+  color: #fff;
+  font-size: 48px;
+  line-height: 1;
+  margin-top: -4px;
+}

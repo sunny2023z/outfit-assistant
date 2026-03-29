@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import * as wardrobeService from '../services/wardrobe.service';
+import ClothingItem from '../models/ClothingItem';
 
 const router = Router();
 
@@ -73,6 +74,40 @@ router.delete('/items/:id', async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'Deleted successfully' });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// 记录穿着（wearCount+1，更新 lastWornAt）
+router.post('/items/:id/wear', async (req, res) => {
+  try {
+    const item = await ClothingItem.findByIdAndUpdate(
+      req.params.id,
+      {
+        $inc: { wearCount: 1 },
+        $set: { lastWornAt: new Date() },
+      },
+      { new: true }
+    );
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    res.json({ data: item });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 更新备注
+router.put('/items/:id/note', async (req, res) => {
+  try {
+    const { note } = req.body;
+    const item = await ClothingItem.findByIdAndUpdate(
+      req.params.id,
+      { $set: { note } },
+      { new: true }
+    );
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    res.json({ data: item });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 

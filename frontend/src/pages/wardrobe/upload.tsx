@@ -1,61 +1,45 @@
 import { useState } from 'react';
-import { View, Text, Image, Button } from '@tarojs/components';
+import { View, Text, Image, Textarea, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { wardrobeApi } from '../../services/api';
-import { ClothingItem, CATEGORY_LABELS, OCCASION_LABELS } from '../../types';
 import './upload.scss';
 
 const USER_ID = 'user123';
 
-interface TagState {
-  category: ClothingItem['category'];
-  colors: string[];
-  style: string[];
-  seasons: string[];
-  occasions: string[];
-}
-
 export default function Upload() {
   const [imageUrl, setImageUrl] = useState('');
-  const [tags, setTags] = useState<TagState>({
-    category: 'top',
-    colors: [],
-    style: [],
-    seasons: [],
-    occasions: [],
-  });
-  const [recognizing, setRecognizing] = useState(false);
+  const [note, setNote] = useState('');
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'recognizing' | 'done'>('idle');
   const [saving, setSaving] = useState(false);
 
   const chooseImage = async () => {
     const res = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] });
     if (res.tempFilePaths[0]) {
-      setImageUrl(res.tempFilePaths[0]);
       await uploadAndRecognize(res.tempFilePaths[0]);
     }
   };
 
   const uploadAndRecognize = async (localPath: string) => {
-    setRecognizing(true);
+    setStatus('uploading');
     try {
-      const uploadRes = await Taro.uploadFile({
-        url: `${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://your-api-domain.com'}/api/upload`,
-        filePath: localPath,
-        name: 'image',
-        formData: { userId: USER_ID },
+      const uploadRes = await new Promise<any>((resolve, reject) => {
+        Taro.uploadFile({
+          url: 'https://outfit-assistant.jellyzen.fun/api/upload',
+          filePath: localPath,
+          name: 'image',
+          formData: { userId: USER_ID },
+          success: (res) => resolve(JSON.parse(res.data)),
+          fail: reject,
+        });
       });
-      const data = JSON.parse(uploadRes.data);
-      if (data.recognition) {
-        setTags(data.recognition);
+      if (uploadRes.url) {
+        setImageUrl(uploadRes.url);
       }
-      if (data.url) {
-        setImageUrl(data.url);
-      }
+      setStatus('done');
       Taro.showToast({ title: 'AI 识别完成', icon: 'success' });
     } catch (err) {
-      Taro.showToast({ title: '识别失败，请手动填写', icon: 'none' });
-    } finally {
-      setRecognizing(false);
+      setStatus('idle');
+      Taro.showToast({ title: '上传失败，请重试', icon: 'error' });
     }
   };
 
@@ -65,7 +49,7 @@ export default function Upload() {
     }
     setSaving(true);
     try {
-      await wardrobeApi.createItem({ userId: USER_ID, imageUrl, ...tags });
+      await wardrobeApi.createItem({ userId: USER_ID, imageUrl, note, category: 'top', colors: [], seasons: [], occasions: [] });
       Taro.showToast({ title: '已添加到衣橱', icon: 'success' });
       setTimeout(() => Taro.navigateBack(), 1500);
     } catch {
@@ -75,12 +59,16 @@ export default function Upload() {
     }
   };
 
-  const CATEGORIES: ClothingItem['category'][] = ['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'];
+  const statusText: Record<string, string> = {
+    idle: '',
+    uploading: '上传中...',
+    recognizing: 'AI 分析中...',
+    done: 'AI 分析完成 ✓',
+  };
 
   return (
     <View className='upload'>
-      {/* 图片区域 */}
-      <View className='image-area' onClick={chooseImage}>
+      <View className='image-area' onClick={status === 'idle' || status === 'done' ? chooseImage : undefined}>
         {imageUrl ? (
           <Image className='preview' src={imageUrl} mode='aspectFit' />
         ) : (
@@ -89,62 +77,32 @@ export default function Upload() {
             <Text className='hint'>点击选择衣物照片</Text>
           </View>
         )}
-        {recognizing && <View className='recognizing-overlay'><Text>AI 识别中...</Text></View>}
+        {(status === 'uploading' || status === 'recognizing') && (
+          <View className='overlay'>
+            <Text className='overlay-text'>{statusText[status]}</Text>
+          </View>
+        )}
       </View>
 
-      {/* 标签编辑区 */}
-      <View className='tags-section'>
-        <Text className='section-title'>类别</Text>
-        <View className='tag-row'>
-          {CATEGORIES.map(cat => (
-            <Text
-              key={cat}
-              className={`tag ${tags.category === cat ? 'active' : ''}`}
-              onClick={() => setTags(prev => ({ ...prev, category: cat }))}
-            >
-              {CATEGORY_LABELS[cat]}
-            </Text>
-          ))}
+      {status === 'done' && (
+        <View className='status-bar'>
+          <Text className='status-text'>{statusText.done}</Text>
+          <Text className='retake' onClick={chooseImage}>重新选择</Text>
         </View>
+      )}
 
-        <Text className='section-title'>场合</Text>
-        <View className='tag-row'>
-          {Object.entries(OCCASION_LABELS).map(([key, label]) => (
-            <Text
-              key={key}
-              className={`tag ${tags.occasions.includes(key) ? 'active' : ''}`}
-              onClick={() => setTags(prev => ({
-                ...prev,
-                occasions: prev.occasions.includes(key)
-                  ? prev.occasions.filter(o => o !== key)
-                  : [...prev.occasions, key]
-              }))}
-            >
-              {label}
-            </Text>
-          ))}
-        </View>
-
-        <Text className='section-title'>季节</Text>
-        <View className='tag-row'>
-          {(['spring', 'summer', 'autumn', 'winter'] as const).map(season => (
-            <Text
-              key={season}
-              className={`tag ${tags.seasons.includes(season) ? 'active' : ''}`}
-              onClick={() => setTags(prev => ({
-                ...prev,
-                seasons: prev.seasons.includes(season)
-                  ? prev.seasons.filter(s => s !== season)
-                  : [...prev.seasons, season]
-              }))}
-            >
-              {{ spring: '春', summer: '夏', autumn: '秋', winter: '冬' }[season]}
-            </Text>
-          ))}
-        </View>
+      <View className='note-section'>
+        <Text className='section-title'>备注（可选）</Text>
+        <Textarea
+          className='note-input'
+          placeholder='描述这件衣服，比如：妈妈送的生日礼物，适合正式场合穿'
+          value={note}
+          onInput={e => setNote(e.detail.value)}
+          maxlength={200}
+        />
       </View>
 
-      <Button className='save-btn' onClick={handleSave} loading={saving}>
+      <Button className='save-btn' onClick={handleSave} loading={saving} disabled={!imageUrl || saving}>
         保存到衣橱
       </Button>
     </View>

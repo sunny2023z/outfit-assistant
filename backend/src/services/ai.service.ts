@@ -3,6 +3,7 @@ import axios from 'axios';
 export interface AIRecognitionResult {
   category: 'top' | 'bottom' | 'dress' | 'outerwear' | 'shoes' | 'accessory';
   colors: string[];
+  material: string;
   style: string[];
   seasons: string[];
   occasions: string[];
@@ -20,6 +21,7 @@ const HUNYUAN_API_URL = 'https://hunyuan.tencentcloudapi.com/hyllm/v1/chat/compl
 const DEFAULT_RESULT: AIRecognitionResult = {
   category: 'top',
   colors: [],
+  material: '',
   style: [],
   seasons: [],
   occasions: [],
@@ -48,6 +50,7 @@ export const recognizeClothing = async (imageUrl: string): Promise<AIRecognition
 {
   "category": "top|bottom|dress|outerwear|shoes|accessory 中的一个",
   "colors": ["颜色1", "颜色2"],
+  "material": "材质描述，如棉、牛仔、皮革等",
   "style": ["风格1", "风格2"],
   "seasons": ["spring|summer|autumn|winter 中适用的季节"],
   "occasions": ["daily|work|date|sport|formal 中适用的场合"]
@@ -75,6 +78,7 @@ export const recognizeClothing = async (imageUrl: string): Promise<AIRecognition
       return {
         category: parsed.category || DEFAULT_RESULT.category,
         colors: Array.isArray(parsed.colors) ? parsed.colors : [],
+        material: parsed.material || '',
         style: Array.isArray(parsed.style) ? parsed.style : [],
         seasons: Array.isArray(parsed.seasons) ? parsed.seasons : [],
         occasions: Array.isArray(parsed.occasions) ? parsed.occasions : [],
@@ -142,5 +146,74 @@ ${itemsDesc}
     }
   } catch (err: any) {
     throw new Error(`Outfit recommendation failed: ${err.message}`);
+  }
+};
+
+export interface OotdRecognitionResult {
+  description: string;
+  items: Array<{
+    category: 'top' | 'bottom' | 'dress' | 'outerwear' | 'shoes' | 'accessory';
+    colors: string[];
+    material: string;
+    description: string;
+  }>;
+}
+
+/**
+ * 识别 OOTD 穿搭照片，返回图中所有衣物信息
+ */
+export const recognizeOotd = async (imageUrl: string): Promise<OotdRecognitionResult> => {
+  try {
+    const response = await axios.post(
+      HUNYUAN_API_URL,
+      {
+        model: 'hunyuan-vision',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image_url',
+                image_url: { url: imageUrl },
+              },
+              {
+                type: 'text',
+                text: `请分析这张穿搭照片，识别图中所有衣物，以 JSON 格式返回：
+{
+  "description": "对整体穿搭的简短描述",
+  "items": [
+    {
+      "category": "top|bottom|dress|outerwear|shoes|accessory 中的一个",
+      "colors": ["颜色1", "颜色2"],
+      "material": "材质描述，如棉、牛仔、皮革等",
+      "description": "对这件衣物的简短描述"
+    }
+  ]
+}
+只返回 JSON，不要其他文字。`,
+              },
+            ],
+          },
+        ],
+        max_tokens: 800,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.HUNYUAN_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const content = response.data?.choices?.[0]?.message?.content;
+    if (!content) return { description: '', items: [] };
+
+    try {
+      return JSON.parse(content);
+    } catch {
+      return { description: '', items: [] };
+    }
+  } catch (err: any) {
+    throw new Error(`OOTD recognition failed: ${err.message}`);
   }
 };
