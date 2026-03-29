@@ -2,8 +2,8 @@ import Taro from '@tarojs/taro';
 import { ClothingItem, WearRecord, RecommendationResult } from '../types';
 
 const BASE_URL = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:3000'
-  : 'https://your-api-domain.com';
+  ? 'https://outfit-assistant.jellyzen.fun'
+  : 'https://outfit-assistant.jellyzen.fun';
 
 const request = <T>(options: {
   url: string;
