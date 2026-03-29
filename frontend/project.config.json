@@ -1,0 +1,10 @@
+{
+  "miniprogramRoot": "dist/",
+  "projectname": "outfit-assistant",
+  "description": "穿搭助手小程序",
+  "appid": "your-appid",
+  "setting": { "urlCheck": false, "es6": false, "minified": false },
+  "compileType": "miniprogram",
+  "libVersion": "2.19.4",
+  "srcMiniprogramRoot": "dist/"
+}
